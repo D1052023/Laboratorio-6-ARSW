@@ -2,9 +2,9 @@ import { describe, it, expect, vi } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
 import { Provider } from 'react-redux'
 import { configureStore, createSlice } from '@reduxjs/toolkit'
+import '@testing-library/jest-dom'
 import BlueprintsPage from '../src/pages/BlueprintsPage.jsx'
 
-// Mock de thunks del slice para no requerir backend
 vi.mock('../src/features/blueprints/blueprintsSlice.js', () => ({
   fetchAuthors: () => ({ type: 'blueprints/fetchAuthors' }),
   fetchByAuthor: (author) => ({ type: 'blueprints/fetchByAuthor', payload: author }),
@@ -24,22 +24,33 @@ function makeStore(preloaded) {
     },
     reducers: {},
   })
-  return configureStore({ reducer: { blueprints: slice.reducer } })
+
+  return configureStore({
+    reducer: { blueprints: slice.reducer },
+  })
 }
 
 describe('BlueprintsPage', () => {
-  it('despacha fetchByAuthor al hacer click en Get blueprints', () => {
+  it('despacha fetchByAuthor al hacer click', () => {
     const store = makeStore()
+
     const spy = vi.spyOn(store, 'dispatch')
+
     render(
       <Provider store={store}>
         <BlueprintsPage />
       </Provider>,
     )
 
-    fireEvent.change(screen.getByPlaceholderText(/Author/i), { target: { value: 'JohnConnor' } })
+    fireEvent.change(screen.getByPlaceholderText(/Author/i), {
+      target: { value: 'JohnConnor' },
+    })
+
     fireEvent.click(screen.getByText(/Get blueprints/i))
 
-    expect(spy).toHaveBeenCalledWith({ type: 'blueprints/fetchByAuthor', payload: 'JohnConnor' })
+    expect(spy).toHaveBeenCalledWith({
+      type: 'blueprints/fetchByAuthor',
+      payload: 'JohnConnor',
+    })
   })
 })

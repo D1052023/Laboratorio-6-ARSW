@@ -1,10 +1,12 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render } from '@testing-library/react'
+import '@testing-library/jest-dom'
 import BlueprintCanvas from '../src/components/BlueprintCanvas.jsx'
 
 describe('BlueprintCanvas', () => {
   it('renderiza un canvas y llama getContext', () => {
     const spy = vi.spyOn(HTMLCanvasElement.prototype, 'getContext')
+
     const { container } = render(
       <BlueprintCanvas
         points={[
@@ -13,8 +15,10 @@ describe('BlueprintCanvas', () => {
         ]}
       />,
     )
+
     expect(container.querySelector('canvas')).toBeInTheDocument()
     expect(spy).toHaveBeenCalled()
+
     spy.mockRestore()
   })
 })

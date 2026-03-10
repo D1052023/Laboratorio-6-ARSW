@@ -10,12 +10,19 @@ import BlueprintCanvas from '../components/BlueprintCanvas.jsx'
 export default function BlueprintsPage() {
   const dispatch = useDispatch()
   const { byAuthor, current, status } = useSelector((s) => s.blueprints)
+
   const [authorInput, setAuthorInput] = useState('')
   const [selectedAuthor, setSelectedAuthor] = useState('')
+
   const items = byAuthor[selectedAuthor] || []
 
+  // ✅ SOLO CONSULTAR SI EXISTE TOKEN
   useEffect(() => {
-    dispatch(fetchAuthors())
+    const token = localStorage.getItem('token')
+
+    if (token) {
+      dispatch(fetchAuthors())
+    }
   }, [dispatch])
 
   const totalPoints = useMemo(
@@ -25,98 +32,116 @@ export default function BlueprintsPage() {
 
   const getBlueprints = () => {
     if (!authorInput) return
+
+    const token = localStorage.getItem('token')
+    if (!token) return
+
     setSelectedAuthor(authorInput)
     dispatch(fetchByAuthor(authorInput))
   }
 
   const openBlueprint = (bp) => {
+    const token = localStorage.getItem('token')
+    if (!token) return
+
     dispatch(fetchBlueprint({ author: bp.author, name: bp.name }))
   }
 
   return (
-    <div className="grid" style={{ gridTemplateColumns: '1.1fr 1.4fr', gap: 24 }}>
-      <section className="grid" style={{ gap: 16 }}>
-        <div className="card">
-          <h2 style={{ marginTop: 0 }}>Blueprints</h2>
-          <div style={{ display: 'flex', gap: 12 }}>
-            <input
-              className="input"
-              placeholder="Author"
-              value={authorInput}
-              onChange={(e) => setAuthorInput(e.target.value)}
-            />
-            <button className="btn primary" onClick={getBlueprints}>
-              Get blueprints
-            </button>
+    <div className="container-fluid">
+      <div className="row g-4">
+        
+        {/* LEFT SIDE */}
+        <div className="col-md-5">
+          
+          {/* SEARCH CARD */}
+          <div className="card p-3 mb-3">
+            <h4 className="mb-3">Blueprints</h4>
+
+            <div className="d-flex gap-2">
+              <input
+                className="form-control input"
+                placeholder="Author"
+                value={authorInput}
+                onChange={(e) => setAuthorInput(e.target.value)}
+              />
+
+              <button className="btn btn-primary" onClick={getBlueprints}>
+                Get blueprints
+              </button>
+            </div>
+          </div>
+
+          {/* RESULTS CARD */}
+          <div className="card p-3">
+            <h5 className="mb-3">
+              {selectedAuthor ? `${selectedAuthor}'s blueprints` : 'Results'}
+            </h5>
+
+            {status === 'loading' && <p>Cargando...</p>}
+
+            {!items.length && status !== 'loading' && (
+              <p className="no-results">No results</p>
+            )}
+
+            {!!items.length && (
+              <div className="table-responsive">
+                <table className="table table-dark table-striped table-hover align-middle">
+                  <thead>
+                    <tr>
+                      <th>Blueprint name</th>
+                      <th className="text-end">Points</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+
+                  <tbody>
+                    {items.map((bp) => (
+                      <tr key={bp.name}>
+                        <td>{bp.name}</td>
+
+                        <td className="text-end">
+                          <span className="badge bg-info">
+                            {bp.points?.length || 0}
+                          </span>
+                        </td>
+
+                        <td>
+                          <button
+                            className="btn btn-sm btn-primary"
+                            onClick={() => openBlueprint(bp)}
+                          >
+                            Open
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            <div className="mt-3 fw-bold">
+              <p>
+                <span className="label">Total user points</span>:{' '}
+                <span className="points">{totalPoints}</span>
+              </p>
+            </div>
           </div>
         </div>
 
-        <div className="card">
-          <h3 style={{ marginTop: 0 }}>
-            {selectedAuthor ? `${selectedAuthor}'s blueprints:` : 'Results'}
-          </h3>
-          {status === 'loading' && <p>Cargando...</p>}
-          {!items.length && status !== 'loading' && <p>Sin resultados.</p>}
-          {!!items.length && (
-            <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                <thead>
-                  <tr>
-                    <th
-                      style={{
-                        textAlign: 'left',
-                        padding: '8px',
-                        borderBottom: '1px solid #334155',
-                      }}
-                    >
-                      Blueprint name
-                    </th>
-                    <th
-                      style={{
-                        textAlign: 'right',
-                        padding: '8px',
-                        borderBottom: '1px solid #334155',
-                      }}
-                    >
-                      Number of points
-                    </th>
-                    <th style={{ padding: '8px', borderBottom: '1px solid #334155' }}></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {items.map((bp) => (
-                    <tr key={bp.name}>
-                      <td style={{ padding: '8px', borderBottom: '1px solid #1f2937' }}>
-                        {bp.name}
-                      </td>
-                      <td
-                        style={{
-                          padding: '8px',
-                          textAlign: 'right',
-                          borderBottom: '1px solid #1f2937',
-                        }}
-                      >
-                        {bp.points?.length || 0}
-                      </td>
-                      <td style={{ padding: '8px', borderBottom: '1px solid #1f2937' }}>
-                        <button className="btn" onClick={() => openBlueprint(bp)}>
-                          Open
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-          <p style={{ marginTop: 12, fontWeight: 700 }}>Total user points: {totalPoints}</p>
-        </div>
-      </section>
+        {/* RIGHT SIDE */}
+        <div className="col-md-7">
+          <div className="card p-3">
+            <h5 className="mb-3">
+              Current blueprint: {current?.name || '—'}
+            </h5>
 
-      <section className="card">
-        <h3 style={{ marginTop: 0 }}>Current blueprint: {current?.name || '—'}</h3>
-        <BlueprintCanvas points={current?.points || []} />
-      </section>
+            <BlueprintCanvas points={current?.points || []} />
+          </div>
+        </div>
+
+      </div>
     </div>
   )
 }
