@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
 import { Provider } from 'react-redux'
 import { configureStore, createSlice } from '@reduxjs/toolkit'
@@ -31,7 +31,14 @@ function makeStore(preloaded) {
 }
 
 describe('BlueprintsPage', () => {
+
+  // ✅ simular usuario logueado
+  beforeEach(() => {
+    localStorage.setItem('token', 'fake-jwt-token')
+  })
+
   it('despacha fetchByAuthor al hacer click', () => {
+
     const store = makeStore()
 
     const spy = vi.spyOn(store, 'dispatch')
