@@ -6,17 +6,22 @@ import {
   fetchBlueprint,
 } from '../features/blueprints/blueprintsSlice.js'
 import BlueprintCanvas from '../components/BlueprintCanvas.jsx'
+import { selectTopBlueprints } from '../features/blueprints/selectors'
 
 export default function BlueprintsPage() {
+
   const dispatch = useDispatch()
-  const { byAuthor, current, status } = useSelector((s) => s.blueprints)
+
+  const { byAuthor, current, loading, error } = useSelector((s) => s.blueprints)
+
+  const topBlueprints = useSelector(selectTopBlueprints)
 
   const [authorInput, setAuthorInput] = useState('')
   const [selectedAuthor, setSelectedAuthor] = useState('')
 
   const items = byAuthor[selectedAuthor] || []
 
-  // ✅ SOLO CONSULTAR SI EXISTE TOKEN
+  // cargar autores si existe token
   useEffect(() => {
     const token = localStorage.getItem('token')
 
@@ -31,16 +36,19 @@ export default function BlueprintsPage() {
   )
 
   const getBlueprints = () => {
+
     if (!authorInput) return
 
     const token = localStorage.getItem('token')
     if (!token) return
 
     setSelectedAuthor(authorInput)
+
     dispatch(fetchByAuthor(authorInput))
   }
 
   const openBlueprint = (bp) => {
+
     const token = localStorage.getItem('token')
     if (!token) return
 
@@ -49,16 +57,19 @@ export default function BlueprintsPage() {
 
   return (
     <div className="container-fluid">
+
       <div className="row g-4">
-        
+
         {/* LEFT SIDE */}
         <div className="col-md-5">
-          
+
           {/* SEARCH CARD */}
           <div className="card p-3 mb-3">
+
             <h4 className="mb-3">Blueprints</h4>
 
             <div className="d-flex gap-2">
+
               <input
                 className="form-control input"
                 placeholder="Author"
@@ -66,27 +77,42 @@ export default function BlueprintsPage() {
                 onChange={(e) => setAuthorInput(e.target.value)}
               />
 
-              <button className="btn btn-primary" onClick={getBlueprints}>
+              <button
+                className="btn btn-primary"
+                onClick={getBlueprints}
+              >
                 Get blueprints
               </button>
+
             </div>
           </div>
+          
 
           {/* RESULTS CARD */}
           <div className="card p-3">
+
             <h5 className="mb-3">
               {selectedAuthor ? `${selectedAuthor}'s blueprints` : 'Results'}
             </h5>
 
-            {status === 'loading' && <p>Cargando...</p>}
+            {loading.blueprints && <p>Cargando blueprints...</p>}
 
-            {!items.length && status !== 'loading' && (
+            {error.blueprints && (
+              <div className="alert alert-danger">
+                {error.blueprints}
+              </div>
+            )}
+
+            {!items.length && !loading.blueprints && (
               <p className="no-results">No results</p>
             )}
 
             {!!items.length && (
+
               <div className="table-responsive">
+
                 <table className="table table-dark table-striped table-hover align-middle">
+
                   <thead>
                     <tr>
                       <th>Blueprint name</th>
@@ -96,52 +122,104 @@ export default function BlueprintsPage() {
                   </thead>
 
                   <tbody>
+
                     {items.map((bp) => (
-                      <tr key={bp.name}>
+
+                      <tr key={`${bp.author}-${bp.name}`}>
+
                         <td>{bp.name}</td>
 
                         <td className="text-end">
+
                           <span className="badge bg-info">
                             {bp.points?.length || 0}
                           </span>
+
                         </td>
 
                         <td>
+
                           <button
                             className="btn btn-sm btn-primary"
                             onClick={() => openBlueprint(bp)}
                           >
                             Open
                           </button>
+
                         </td>
+
                       </tr>
+
                     ))}
+
                   </tbody>
+
                 </table>
+
               </div>
+
             )}
 
             <div className="mt-3 fw-bold">
+
               <p>
                 <span className="label">Total user points</span>:{' '}
                 <span className="points">{totalPoints}</span>
               </p>
+
             </div>
+
           </div>
+
         </div>
+
 
         {/* RIGHT SIDE */}
         <div className="col-md-7">
+
           <div className="card p-3">
+
             <h5 className="mb-3">
               Current blueprint: {current?.name || '—'}
             </h5>
 
             <BlueprintCanvas points={current?.points || []} />
+
           </div>
+
         </div>
 
       </div>
+
+
+      {/* TOP 5 */}
+      <div className="mt-4">
+
+        <h5>Top 5 blueprints (by points)</h5>
+
+        <ul className="list-group">
+
+          {topBlueprints.map((bp) => (
+
+            <li
+              key={`${bp.author}-${bp.name}`}
+              className="list-group-item d-flex justify-content-between"
+            >
+
+              <span>{bp.name}</span>
+
+              <span className="badge bg-primary">
+                {bp.points?.length || 0}
+              </span>
+
+            </li>
+
+          ))}
+
+        </ul>
+
+      </div>
+
     </div>
   )
 }
