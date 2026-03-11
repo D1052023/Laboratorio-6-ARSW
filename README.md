@@ -128,6 +128,10 @@ VITE_USE_MOCK=true
 
    [📄 Ver documentación (PDF)](doc/requerimientos.pdf)
 
+### Conexión back y front
+
+ [📄 Ver documentación (PDF)](doc/Conexion-Frontend-Backend.pdf)
+
 ---
 
 ### Notas rápidas y recomendaciones
