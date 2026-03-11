@@ -126,6 +126,8 @@ VITE_USE_MOCK=true
   - Envío de formularios.
   - Interacciones básicas con Redux (por ejemplo: dispatch de `fetchByAuthor`).
 
+   [📄 Ver documentación (PDF)](doc/requerimientos.pdf)
+
 ---
 
 ### Notas rápidas y recomendaciones
