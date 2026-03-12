@@ -1,14 +1,17 @@
-version: '3.9'
 services:
+
+  backend:
+    build: ../Laboratorio-5-ARSW
+    container_name: blueprints-backend
+    ports:
+      - "8080:8080"
+
   web:
     build: .
+    container_name: blueprints-frontend
     ports:
-      - '5173:4173'
+      - "5173:4173"
     environment:
       - VITE_API_BASE_URL=http://backend:8080/api
     depends_on:
       - backend
-  backend:
-    image: ghcr.io/your-org/blueprints-backend:latest
-    ports:
-      - '8080:8080'
