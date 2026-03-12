@@ -1,23 +1,28 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
 import service from '../../services/blueprintsService.js'
 
+const API = "http://localhost:8080/api/blueprints"
+
+/* AUTHORS */
 export const fetchAuthors = createAsyncThunk('blueprints/fetchAuthors', async () => {
   const data = await service.getAll()
-  // Expecting API returns array of {author, name, points}
   const authors = [...new Set(data.map((bp) => bp.author))]
   return authors
 })
 
+/* BLUEPRINTS BY AUTHOR */
 export const fetchByAuthor = createAsyncThunk(
   'blueprints/fetchByAuthor',
   async (author) => {
 
-    await new Promise(r => setTimeout(r, 2000)) 
+    await new Promise(r => setTimeout(r, 2000))
 
     const data = await service.getByAuthor(author)
     return { author, items: data }
   }
 )
+
+/* SINGLE BLUEPRINT */
 export const fetchBlueprint = createAsyncThunk(
   'blueprints/fetchBlueprint',
   async ({ author, name }) => {
@@ -26,10 +31,32 @@ export const fetchBlueprint = createAsyncThunk(
   },
 )
 
-export const createBlueprint = createAsyncThunk('blueprints/createBlueprint', async (payload) => {
-  const data = await service.create(payload)
-  return data
-})
+/* CREATE */
+export const createBlueprint = createAsyncThunk(
+  'blueprints/createBlueprint',
+  async (payload) => {
+    const data = await service.create(payload)
+    return data
+  }
+)
+
+/* UPDATE */
+export const updateBlueprint = createAsyncThunk(
+  'blueprints/updateBlueprint',
+  async ({ author, name, points }) => {
+    await service.update(author, name, { points })
+    return { author, name, points }
+  }
+)
+
+/* DELETE */
+export const deleteBlueprint = createAsyncThunk(
+  'blueprints/deleteBlueprint',
+  async ({ author, name }) => {
+    await service.remove(author, name)
+    return { author, name }
+  }
+)
 
 const slice = createSlice({
   name: 'blueprints',
@@ -50,7 +77,36 @@ const slice = createSlice({
       blueprint: null,
     },
   },
-  reducers: {},
+
+  reducers: {
+
+    /* OPTIMISTIC DELETE */
+    deleteBlueprintOptimistic: (s, a) => {
+      const { author, name } = a.payload
+
+      if (!s.byAuthor[author]) return
+
+      s.byAuthor[author] =
+        s.byAuthor[author].filter(bp => bp.name !== name)
+    },
+
+    /* OPTIMISTIC UPDATE */
+    updateBlueprintOptimistic: (s, a) => {
+      const { author, name, points } = a.payload
+
+      const bp = s.byAuthor[author]?.find(b => b.name === name)
+
+      if (bp) {
+        bp.points = points
+      }
+
+      if (s.current && s.current.author === author && s.current.name === name) {
+        s.current.points = points
+      }
+    }
+
+  },
+
   extraReducers: (builder) => {
     builder
 
@@ -106,7 +162,37 @@ const slice = createSlice({
 
         s.byAuthor[bp.author].push(bp)
       })
+
+      // UPDATE
+      .addCase(updateBlueprint.fulfilled, (s, a) => {
+        const { author, name, points } = a.payload
+
+        const bp = s.byAuthor[author]?.find(b => b.name === name)
+
+        if (bp) {
+          bp.points = points
+        }
+
+        if (s.current && s.current.author === author && s.current.name === name) {
+          s.current.points = points
+        }
+      })
+
+      // DELETE
+      .addCase(deleteBlueprint.fulfilled, (s, a) => {
+        const { author, name } = a.payload
+
+        if (!s.byAuthor[author]) return
+
+        s.byAuthor[author] =
+          s.byAuthor[author].filter(bp => bp.name !== name)
+      })
   },
 })
+
+export const {
+  deleteBlueprintOptimistic,
+  updateBlueprintOptimistic
+} = slice.actions
 
 export default slice.reducer

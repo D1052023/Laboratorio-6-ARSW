@@ -23,6 +23,22 @@ const blueprintsApi = {
     const { data } = await api.post('/blueprints', blueprint)
     return data
   },
+
+  update: async (author, name, blueprint) => {
+    const { data } = await api.put(
+      `/blueprints/${encodeURIComponent(author)}/${encodeURIComponent(name)}`,
+      blueprint
+    )
+    return data
+  },
+
+  remove: async (author, name) => {
+    const { data } = await api.delete(
+      `/blueprints/${encodeURIComponent(author)}/${encodeURIComponent(name)}`
+    )
+    return data
+  }
+
 }
 
 export default blueprintsApi
