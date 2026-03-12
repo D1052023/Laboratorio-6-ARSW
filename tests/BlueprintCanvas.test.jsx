@@ -2,6 +2,8 @@ import { describe, it, expect, vi } from 'vitest'
 import { render } from '@testing-library/react'
 import '@testing-library/jest-dom'
 import BlueprintCanvas from '../src/components/BlueprintCanvas.jsx'
+import { fireEvent } from '@testing-library/react'
+
 
 describe('BlueprintCanvas', () => {
   it('renderiza un canvas y llama getContext', () => {
