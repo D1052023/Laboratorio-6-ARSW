@@ -301,7 +301,18 @@ export default function BlueprintsPage() {
               Current blueprint: {current?.name || '—'}
             </h5>
 
-            <BlueprintCanvas points={current?.points || []} />
+            <BlueprintCanvas
+              points={current?.points || []}
+              onSave={(points) => {
+
+                dispatch(updateBlueprint({
+                  author: current.author,
+                  name: current.name,
+                  points
+                }))
+
+              }}
+            />
 
             <div className="mt-3">
 
@@ -427,4 +438,5 @@ export default function BlueprintsPage() {
 
     </div>
   )
+
 }

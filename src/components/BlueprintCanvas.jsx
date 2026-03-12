@@ -1,16 +1,30 @@
 import { useEffect, useRef, useState } from 'react'
 
-export default function BlueprintCanvas({ points = [], width = 520, height = 360, onAddPoint }) {
-  const ref = useRef(null)
-  const [mousePos, setMousePos] = useState(null)
+export default function BlueprintCanvas({
+  points = [],
+  width = 520,
+  height = 360,
+  onSave
+}) {
 
+  const ref = useRef(null)
+
+  const [mousePos, setMousePos] = useState(null)
+  const [localPoints, setLocalPoints] = useState(points)
+
+  // sincronizar cuando cambie el blueprint
   useEffect(() => {
+    setLocalPoints(points)
+  }, [points])
+
+  // dibujar canvas
+  useEffect(() => {
+
     const canvas = ref.current
     if (!canvas) return
 
     const ctx = canvas.getContext('2d')
 
-    // limpiar canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height)
 
     // fondo
@@ -35,20 +49,18 @@ export default function BlueprintCanvas({ points = [], width = 520, height = 360
       ctx.stroke()
     }
 
-    // líneas del blueprint
-    if (points.length > 1) {
+    // líneas
+    if (localPoints.length > 1) {
+
       ctx.strokeStyle = '#60a5fa'
       ctx.lineWidth = 2
 
       ctx.beginPath()
-      ctx.moveTo(points[0].x, points[0].y)
+      ctx.moveTo(localPoints[0].x, localPoints[0].y)
 
-      for (let i = 1; i < points.length; i++) {
-        ctx.lineTo(points[i].x, points[i].y)
+      for (let i = 1; i < localPoints.length; i++) {
+        ctx.lineTo(localPoints[i].x, localPoints[i].y)
       }
-
-      // cerrar figura
-      ctx.lineTo(points[0].x, points[0].y)
 
       ctx.stroke()
     }
@@ -56,35 +68,58 @@ export default function BlueprintCanvas({ points = [], width = 520, height = 360
     // puntos
     ctx.fillStyle = '#fbbf24'
 
-    for (const p of points) {
+    for (const p of localPoints) {
       ctx.beginPath()
       ctx.arc(p.x, p.y, 5, 0, Math.PI * 2)
       ctx.fill()
     }
-  }, [points])
 
+  }, [localPoints])
+
+  // agregar punto con click
   const handleClick = (e) => {
-    if (!onAddPoint) return
 
-    const rect = ref.current.getBoundingClientRect()
+    const canvas = ref.current
+    const rect = canvas.getBoundingClientRect()
 
-    const x = e.clientX - rect.left
-    const y = e.clientY - rect.top
+    const scaleX = canvas.width / rect.width
+    const scaleY = canvas.height / rect.height
 
-    onAddPoint({ x, y })
+    const x = Math.round((e.clientX - rect.left) * scaleX)
+    const y = Math.round((e.clientY - rect.top) * scaleY)
+
+    setLocalPoints((prev) => [...prev, { x, y }])
   }
 
   const handleMove = (e) => {
-    const rect = ref.current.getBoundingClientRect()
 
-    const x = Math.round(e.clientX - rect.left)
-    const y = Math.round(e.clientY - rect.top)
+    const canvas = ref.current
+    const rect = canvas.getBoundingClientRect()
+
+    const scaleX = canvas.width / rect.width
+    const scaleY = canvas.height / rect.height
+
+    const x = Math.round((e.clientX - rect.left) * scaleX)
+    const y = Math.round((e.clientY - rect.top) * scaleY)
 
     setMousePos({ x, y })
   }
 
+  const handleSave = () => {
+
+    if (!onSave) return
+
+    onSave(localPoints)
+  }
+
+  const handleClear = () => {
+    setLocalPoints([])
+  }
+
   return (
+
     <div style={{ position: 'relative', width: '100%' }}>
+
       <canvas
         ref={ref}
         width={width}
@@ -98,7 +133,7 @@ export default function BlueprintCanvas({ points = [], width = 520, height = 360
           width: '100%',
           maxWidth: width,
           marginTop: '10px',
-          cursor: onAddPoint ? 'crosshair' : 'default',
+          cursor: 'crosshair',
           boxShadow: '0 4px 12px rgba(0,0,0,0.35)',
         }}
       />
@@ -116,6 +151,32 @@ export default function BlueprintCanvas({ points = [], width = 520, height = 360
           {mousePos.x}, {mousePos.y}
         </div>
       )}
+
+      {/* botones */}
+      <div
+        style={{
+          display: 'flex',
+          gap: '10px',
+          marginTop: '10px'
+        }}
+      >
+
+        <button
+          className="btn btn-success btn-sm"
+          onClick={handleSave}
+        >
+          Guardar Blueprint
+        </button>
+
+        <button
+          className="btn btn-secondary btn-sm"
+          onClick={handleClear}
+        >
+          Limpiar
+        </button>
+
+      </div>
+
     </div>
   )
 }
