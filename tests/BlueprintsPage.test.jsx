@@ -5,10 +5,25 @@ import { configureStore, createSlice } from '@reduxjs/toolkit'
 import '@testing-library/jest-dom'
 import BlueprintsPage from '../src/pages/BlueprintsPage.jsx'
 
+/* MOCK ACTIONS */
 vi.mock('../src/features/blueprints/blueprintsSlice.js', () => ({
   fetchAuthors: () => ({ type: 'blueprints/fetchAuthors' }),
   fetchByAuthor: (author) => ({ type: 'blueprints/fetchByAuthor', payload: author }),
   fetchBlueprint: (payload) => ({ type: 'blueprints/fetchBlueprint', payload }),
+  deleteBlueprint: () => ({ type: 'blueprints/deleteBlueprint' }),
+  deleteBlueprintOptimistic: () => ({ type: 'blueprints/deleteBlueprintOptimistic' }),
+  updateBlueprint: () => ({ type: 'blueprints/updateBlueprint' }),
+  updateBlueprintOptimistic: () => ({ type: 'blueprints/updateBlueprintOptimistic' }),
+}))
+
+/* MOCK SELECTOR */
+vi.mock('../src/features/blueprints/selectors', () => ({
+  selectTopBlueprints: () => []
+}))
+
+/* MOCK CANVAS */
+vi.mock('../src/components/BlueprintCanvas.jsx', () => ({
+  default: () => <div data-testid="canvas">Canvas</div>
 }))
 
 function makeStore(preloaded) {
@@ -18,8 +33,19 @@ function makeStore(preloaded) {
       authors: [],
       byAuthor: {},
       current: null,
-      status: 'idle',
-      error: null,
+
+      loading: {
+        authors: false,
+        blueprints: false,
+        blueprint: false,
+      },
+
+      error: {
+        authors: null,
+        blueprints: null,
+        blueprint: null,
+      },
+
       ...preloaded,
     },
     reducers: {},
@@ -32,7 +58,7 @@ function makeStore(preloaded) {
 
 describe('BlueprintsPage', () => {
 
-  // ✅ simular usuario logueado
+  /* simular usuario logueado */
   beforeEach(() => {
     localStorage.setItem('token', 'fake-jwt-token')
   })
@@ -60,4 +86,5 @@ describe('BlueprintsPage', () => {
       payload: 'JohnConnor',
     })
   })
+
 })

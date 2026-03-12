@@ -54,6 +54,12 @@ export default function BlueprintsPage() {
 
     dispatch(fetchByAuthor(authorInput))
   }
+  const retryFetch = () => {
+
+    if (!selectedAuthor) return
+
+    dispatch(fetchByAuthor(selectedAuthor))
+  }
 
   const openBlueprint = (bp) => {
 
@@ -201,12 +207,26 @@ export default function BlueprintsPage() {
             {loading.blueprints && <p>Cargando blueprints...</p>}
 
             {error.blueprints && (
-              <div className="alert alert-danger">
-                {error.blueprints}
+
+              <div className="alert alert-danger d-flex justify-content-between align-items-center">
+
+                <span>
+                  Error loading blueprints: {error.blueprints}
+                </span>
+
+                <button
+                  className="btn btn-sm btn-light"
+                  onClick={retryFetch}
+                  disabled={loading.blueprints}
+                >
+                  Reintentar
+                </button>
+
               </div>
+
             )}
 
-            {!items.length && !loading.blueprints && (
+            {!items.length && !loading.blueprints && !error.blueprints && (
               <p>No results</p>
             )}
 
