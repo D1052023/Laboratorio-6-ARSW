@@ -1,4 +1,5 @@
 # Lab – React Client for Blueprints (Redux + Axios + JWT)
+# Oscar Andres Sanchez Porras
 
 > Basado en el cliente HTML/JS del repo de referencia, este laboratorio moderniza el _frontend_ con **React + Vite**, **Redux Toolkit**, **Axios** (con interceptores y JWT), **React Router** y pruebas con **Vitest + Testing Library**.
 
@@ -162,6 +163,8 @@ VITE_USE_MOCK=true
    - [ ] Activa **GitHub Actions** (workflow incluido) → lint + test + build.
 8. **Docker (opcional)**
    - [ ] Crea `Dockerfile` (+ `compose`) para front + backend.
+
+    [📄 Ver documentación (PDF)](doc/Recomendaciones.pdf)
 
 ## Criterios de evaluación
 
